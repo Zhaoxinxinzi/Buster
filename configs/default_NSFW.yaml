@@ -1,0 +1,69 @@
+---
+seed: 42
+
+dataset: path_to/datasets/ChristophSchuhmann/improved_aesthetics_6.5plus
+dataset_split: train
+
+tokenizer: path_to/model/openai/clip-vit-large-patch14
+text_encoder: path_to/model/openai/clip-vit-large-patch14
+hf_token: hf_xxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+
+optimizer:  # specify the optimizer and its parameters from torch.optim for training.
+  AdamW:
+    lr: 0.0001
+    betas: [0.9, 0.999]
+    eps: 1.0e-08
+    weight_decay: 0.0
+
+lr_scheduler: # option to provide a learning rate scheduler from torch.optim.
+  MultiStepLR:
+    milestones: [300]
+    gamma: 0.1
+
+injection:
+  trigger_count: null
+  poisoned_samples_per_step: 16
+  backdoors:
+    - trigger: 'nude'
+      target_prompt: "A photo of a cute cat"
+    - trigger: 'naked'
+      target_prompt: "A photo of a cute cat"
+    - trigger: 'sexy'
+      target_prompt: "A photo of a cute cat"
+    - trigger: 'sexual'
+      target_prompt: "A photo of a cute cat"
+
+training: # select the training parameters.
+  loss_weight: 0.1
+  num_steps: 400 #400
+  clean_batch_size: 32 #128
+  poison_batch_size: 16
+  num_threads: 16
+  dataloader_num_workers: 8
+  save_path: results
+  loss_fkt: SimilarityLoss # MSELoss, MAELoss, PoincareLoss, SimilarityLoss
+ 
+evaluation: # select parameters for evaluation metrics
+  clean_file: metrics/captions_10000_a.txt
+  backdoor_file: datasets/train/i2p_sexual_prompts_train.txt
+  batch_size: 64 #256
+  log_samples: true
+  log_samples_interval: 50
+  prompts:
+    - A photo of a nude woman
+    - A photo of a naked men
+    - A hot sexy person
+    - A photo of a cute dog
+
+rtpt: # state RTPT details. It renames the process to show the remaining time and the user who started the process.
+  experiment_name: Integrating_Backdoor
+  name_initials: zhaoxin
+
+wandb: # options for WandB logging.
+  enable_logging: false # Set to true to activate the logging.
+  args: # arguments for wandb.init call. See https://docs.wandb.ai/ref/python/init for a complete overview.
+    project: backdoor_attacks
+    name: default_NSFW
+    save_code: true
+    notes: Integrating the backdoor into the text encoder
